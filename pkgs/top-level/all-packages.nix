@@ -9219,6 +9219,8 @@ in
   junixsocket = callPackage ../development/libraries/java/junixsocket { };
 
   jzmq = callPackage ../development/libraries/java/jzmq { };
+  
+  lombok = callPackage ../development/libraries/java/lombok { };
 
   lucene = callPackage ../development/libraries/java/lucene { };
 
