@@ -4,16 +4,16 @@ with lib;
 
 let
 
-  generationsDirBuilder = pkgs.substituteAll {
+  generationsDirBuilder = {installSystem}: let pkgs_ = import ../installer-pkgs.nix {inherit installSystem pkgs;}; in pkgs_.substituteAll {
     src = ./generations-dir-builder.sh;
     isExecutable = true;
-    inherit (pkgs) bash;
-    path = [pkgs.coreutils pkgs.gnused pkgs.gnugrep];
+    inherit (pkgs_) bash;
+    path = [pkgs_.coreutils pkgs_.gnused pkgs_.gnugrep];
     inherit (config.boot.loader.generationsDir) copyKernels;
   };
 
   # Temporary check, for nixos to cope both with nixpkgs stdenv-updates and trunk
-  platform = pkgs.stdenv.platform;
+  platform = pkgs.stdenv.hostPlatform.platform;
 
 in
 

@@ -9,12 +9,11 @@ let
   efi = config.boot.loader.efi;
 
   realGrub = if cfg.version == 1 then pkgs.grub
-    else if cfg.zfsSupport then pkgs.grub2.override { zfsSupport = true; }
     else if cfg.trustedBoot.enable
          then if cfg.trustedBoot.isHPLaptop
               then pkgs.trustedGrub-for-HP
               else pkgs.trustedGrub
-         else pkgs.grub2;
+         else pkgs.grub2.override { inherit (cfg) zfsSupport; };
 
   grub =
     # Don't include GRUB if we're only generating a GRUB menu (e.g.,
@@ -542,20 +541,20 @@ in
         { path = "/boot"; inherit (cfg) devices; inherit (efi) efiSysMountPoint; }
       ];
 
-      system.build.installBootLoader =
-        let
-          install-grub-pl = pkgs.substituteAll {
+      system.build.installBootLoader = {installSystem}: let pkgs_ = import ../installer-pkgs.nix {inherit pkgs installSystem;};
+        in let
+          install-grub-pl = pkgs_.substituteAll {
             src = ./install-grub.pl;
-            inherit (pkgs) utillinux;
-            btrfsprogs = pkgs.btrfs-progs;
+            inherit (pkgs_) utillinux;
+            btrfsprogs = pkgs_.btrfs-progs;
           };
-        in pkgs.writeScript "install-grub.sh" (''
-        #!${pkgs.runtimeShell}
+        in pkgs_.writeScript "install-grub.sh" (''
+        #!${pkgs_.runtimeShell}
         set -e
-        export PERL5LIB=${makePerlPath (with pkgs.perlPackages; [ FileSlurp XMLLibXML XMLSAX XMLSAXBase ListCompare ])}
+        export PERL5LIB=${makePerlPath (with pkgs_.perlPackages; [ FileSlurp XMLLibXML XMLSAX XMLSAXBase ListCompare ])}
         ${optionalString cfg.enableCryptodisk "export GRUB_ENABLE_CRYPTODISK=y"}
       '' + flip concatMapStrings cfg.mirroredBoots (args: ''
-        ${pkgs.perl}/bin/perl ${install-grub-pl} ${grubConfig args} $@
+        ${pkgs_.perl}/bin/perl ${install-grub-pl} ${grubConfig args} $@
       ''));
 
       system.build.grub = grub;

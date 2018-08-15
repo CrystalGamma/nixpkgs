@@ -7,12 +7,12 @@ let
 
   efi = config.boot.loader.efi;
 
-  gummibootBuilder = pkgs.substituteAll {
+  gummibootBuilder = {installSystem}: let pkgs_ = import ../installer-pkgs.nix {inherit installSystem pkgs;}; in pkgs_.substituteAll {
     src = ./systemd-boot-builder.py;
 
     isExecutable = true;
 
-    inherit (pkgs) python3;
+    inherit (pkgs_) python3;
 
     systemd = config.systemd.package;
 

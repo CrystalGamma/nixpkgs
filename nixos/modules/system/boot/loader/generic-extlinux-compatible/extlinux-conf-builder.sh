@@ -6,16 +6,17 @@ export PATH=/empty
 for i in @path@; do PATH=$PATH:$i/bin; done
 
 usage() {
-    echo "usage: $0 -t <timeout> -c <path-to-default-configuration> [-d <boot-dir>] [-g <num-generations>]" >&2
+    echo "usage: $0 -t <timeout> -c <path-to-default-configuration> [-d <boot-dir>] [-o <configuration-file-path>] [-g <num-generations>]" >&2
     exit 1
 }
 
 timeout=                # Timeout in centiseconds
 default=                # Default configuration
-target=/boot            # Target directory
+target=/boot/nixos            # Target directory
+conf=/boot/extlinux/extlinux.conf
 numGenerations=0        # Number of other generations to include in the menu
 
-while getopts "t:c:d:g:" opt; do
+while getopts "t:c:d:o:g:" opt; do
     case "$opt" in
         t) # U-Boot interprets '0' as infinite and negative as instant boot
             if [ "$OPTARG" -lt 0 ]; then
@@ -28,6 +29,7 @@ while getopts "t:c:d:g:" opt; do
             ;;
         c) default="$OPTARG" ;;
         d) target="$OPTARG" ;;
+        o) conf="$OPTARG" ;;
         g) numGenerations="$OPTARG" ;;
         \?) usage ;;
     esac
@@ -35,8 +37,8 @@ done
 
 [ "$timeout" = "" -o "$default" = "" ] && usage
 
-mkdir -p $target/nixos
-mkdir -p $target/extlinux
+mkdir -p $target
+mkdir -p $(dirname $conf)
 
 # Convert a path to a file in the Nix store such as
 # /nix/store/<hash>-<name>/file to <hash>-<name>-<file>.
@@ -45,12 +47,12 @@ cleanName() {
     echo "$path" | sed 's|^/nix/store/||' | sed 's|/|-|g'
 }
 
-# Copy a file from the Nix store to $target/nixos.
+# Copy a file from the Nix store to $target.
 declare -A filesCopied
 
 copyToKernelsDir() {
     local src=$(readlink -f "$1")
-    local dst="$target/nixos/$(cleanName $src)"
+    local dst="$target/$(cleanName $src)"
     # Don't copy the file if $dst already exists.  This means that we
     # have to create $dst atomically to prevent partially copied
     # kernels or initrd if this script is ever interrupted.
@@ -63,7 +65,7 @@ copyToKernelsDir() {
     result=$dst
 }
 
-# Copy its kernel, initrd and dtbs to $target/nixos, and echo out an
+# Copy its kernel, initrd and dtbs to $target, and echo out an
 # extlinux menu entry
 addEntry() {
     local path=$(readlink -f "$1")
@@ -94,15 +96,16 @@ addEntry() {
     else
         echo "  MENU LABEL NixOS - Configuration $tag ($timestamp - $nixosLabel)"
     fi
-    echo "  LINUX ../nixos/$(basename $kernel)"
-    echo "  INITRD ../nixos/$(basename $initrd)"
+    # write paths relative to the mount points, since some bootloaders (e. g. petitboot) do not handle relative paths well
+    echo "  LINUX /$(realpath --relative-to="/$(stat -c "%m" $conf)" $kernel)"
+    echo "  INITRD /$(realpath --relative-to="/$(stat -c "%m" $conf)" $initrd)"
     if [ -d "$dtbDir" ]; then
-        echo "  FDTDIR ../nixos/$(basename $dtbs)"
+        echo "  FDTDIR /$(realpath --relative-to="$(stat -c "%m" $conf)" $dtbs)"
     fi
     echo "  APPEND systemConfig=$path init=$path/init $extraParams"
 }
 
-tmpFile="$target/extlinux/extlinux.conf.tmp.$$"
+tmpFile="$conf.tmp.$$"
 
 cat > $tmpFile <<EOF
 # Generated file, all changes will be lost on nixos-rebuild!
@@ -129,13 +132,15 @@ if [ "$numGenerations" -gt 0 ]; then
     done >> $tmpFile
 fi
 
-mv -f $tmpFile $target/extlinux/extlinux.conf
+mv -f $tmpFile $conf
 
-# Remove obsolete files from $target/nixos.
-for fn in $target/nixos/*; do
+# Remove obsolete files from $target.
+for fn in $target/*; do
     if ! test "${filesCopied[$fn]}" = 1; then
-        echo "Removing no longer needed boot file: $fn"
-        chmod +w -- "$fn"
-        rm -rf -- "$fn"
+        if [[ $conf != $fn* ]]; then
+            echo "Removing no longer needed boot file: $fn"
+            chmod +w -- "$fn"
+            rm -rf -- "$fn"
+        fi
     fi
 done

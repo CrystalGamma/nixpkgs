@@ -118,9 +118,9 @@ let
 
       inherit children;
       kernelParams = config.boot.kernelParams;
-      installBootLoader =
-        config.system.build.installBootLoader
-        or "echo 'Warning: do not know how to make this configuration bootable; please enable a boot loader.' 1>&2; true";
+      installBootLoader = if config.system.build ? installBootLoader then
+        (config.system.build.installBootLoader {installSystem = pkgs.stdenv.hostPlatform;})
+        else "echo 'Warning: do not know how to make this configuration bootable; please enable a boot loader.' 1>&2; true";
       activationScript = config.system.activationScripts.script;
       nixosLabel = config.system.nixos.label;
 
@@ -175,7 +175,7 @@ in
 
     system.boot.loader.kernelFile = mkOption {
       internal = true;
-      default = pkgs.stdenv.platform.kernelTarget;
+      default = let inherit (pkgs.stdenv.hostPlatform) platform; in if platform ? kernelFile then platform.kernelFile else platform.kernelTarget;
       type = types.str;
       description = ''
         Name of the kernel file to be passed to the bootloader.

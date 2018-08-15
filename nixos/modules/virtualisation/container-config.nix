@@ -17,7 +17,7 @@ with lib;
     services.openssh.startWhenNeeded = mkDefault true;
 
     # Shut up warnings about not having a boot loader.
-    system.build.installBootLoader = "${pkgs.coreutils}/bin/true";
+    system.build.installBootLoader = {installSystem}: let pkgs_ = import ../system/boot/loader/installer-pkgs.nix {inherit pkgs installSystem;}; in "${pkgs_.coreutils}/bin/true";
 
     # Not supported in systemd-nspawn containers.
     security.audit.enable = false;

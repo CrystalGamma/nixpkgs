@@ -47,6 +47,17 @@ while [ "$#" -gt 0 ]; do
         --show-trace)
             extraBuildFlags+=("$i")
             ;;
+        --cross)
+            crossInstall=1
+            installSystem=builtins.currentSystem
+            ;;
+        --install-system)
+            crossInstall=1
+            installSystem="$1"; shift 1
+            ;;
+        --install-boot-loader)
+            installBootLoader="$1"; shift 1
+            ;;
         --help)
             exec man nixos-install
             exit 1
@@ -97,6 +108,20 @@ if [[ -z $system ]]; then
     system=$(readlink -f $outLink)
 fi
 
+if [[ ! -z $crossInstall && -z $installBootLoader ]]; then
+    echo "building the bootloader-installer … "
+    outLink="$tmpdir/bootloader-installer"
+    nix build --out-link "$outLink" --store "$mountPoint" "${extraBuildFlags[@]}" \
+        --extra-substituters "$sub" \
+        '(import <nixpkgs/nixos> {}).config.system.build.installBootLoader {installSystem='"$installSystem"';}' -I "nixos-config=$NIXOS_CONFIG"
+    installBootLoader=$(readlink -f $outLink)
+    outLink="$tmpdir/installer-bash"
+    nix build --out-link "$outLink" --store "$mountPoint" "${extraBuildFlags[@]}" \
+        --extra-substituters "$sub" \
+        '(import <nixpkgs> {localSystem='"$installSystem"';}).bash' -I "nixos-config=$NIXOS_CONFIG"
+    installerBash=$(readlink -f $outLink)
+fi
+
 # Set the system profile to point to the configuration. TODO: combine
 # this with the previous step once we have a nix-env replacement with
 # a progress bar.
@@ -131,7 +156,18 @@ if [[ -z $noBootLoader ]]; then
     echo "installing the boot loader..."
     # Grub needs an mtab.
     ln -sfn /proc/mounts $mountPoint/etc/mtab
-    NIXOS_INSTALL_BOOTLOADER=1 nixos-enter --root "$mountPoint" -- /run/current-system/bin/switch-to-configuration boot
+    if [[ -z $installBootLoader ]]; then
+        NIXOS_INSTALL_BOOTLOADER=1 nixos-enter --root "$mountPoint" -- /run/current-system/bin/switch-to-configuration boot
+    else
+        mkdir -p "$mountPoint/proc"
+        mount --bind /proc "$mountPoint/proc"
+        mount --bind /dev "$mountPoint/dev" # bootloader installer needs the block device available
+        trap 'umount "$mountPoint/proc" "$mountPoint/dev"' ERR
+        mkdir -p "$mountPoint/bin"
+        ln -sfn "$installerBash/bin/bash" "$mountPoint/bin/sh"
+        NIXOS_INSTALL_BOOTLOADER=1 chroot "$mountPoint" $installBootLoader $system
+        umount "$mountPoint/proc" "$mountPoint/dev"
+    fi
 fi
 
 # Ask the user to set a root password, but only if the passwd command

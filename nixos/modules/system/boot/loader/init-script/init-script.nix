@@ -4,11 +4,11 @@ with lib;
 
 let
 
-  initScriptBuilder = pkgs.substituteAll {
+  initScriptBuilder = {installSystem}: let pkgs_ = import ../installer-pkgs.nix {inherit installSystem pkgs;}; in pkgs_.substituteAll {
     src = ./init-script-builder.sh;
     isExecutable = true;
-    inherit (pkgs) bash;
-    path = [pkgs.coreutils pkgs.gnused pkgs.gnugrep];
+    inherit (pkgs_) bash;
+    path = [pkgs_.coreutils pkgs_.gnused pkgs_.gnugrep];
   };
 
 in
