@@ -1,0 +1,18 @@
+--- a/Expat/Makefile.PL  2014-12-11 07:51:11.000000000 +0100
++++ b/Expat/Makefile.PL    2018-06-27 16:48:59.962141659 +0200
+@@ -1,6 +1,5 @@
+ use ExtUtils::MakeMaker;
+ use Config;
+-use English;
+ 
+ my $libs = "-lexpat";
+ my @extras = ();
+@@ -10,7 +9,7 @@
+ $libs = "-L$expat_libpath $libs" if $expat_libpath;
+ 
+ push(@extras, CAPI => 'TRUE')
+-    if (($PERL_VERSION >= 5.005) and ($OSNAME eq 'MSWin32')
++    if (($^V >= 5.005) and ($^O eq 'MSWin32')
+         and ($Config{archname} =~ /-object\b/i));
+ 
+ push(@extras,

@@ -1,0 +1,17 @@
+--- a/acinclude.m4
++++ b/acinclude.m4
+@@ -111,13 +111,7 @@
+         ac_cv_sys_symbol_underscore=yes
+         ;;
+     *)
+-      if test "$cross_compiling" = yes; then
+-        if test "x$ac_cv_sys_symbol_underscore" = x ; then
+-           ac_cv_sys_symbol_underscore=yes
+-        fi
+-      else
+-         tmp_do_check="yes"
+-      fi
++       tmp_do_check="yes"
+        ;;
+ esac
+ if test "$tmp_do_check" = "yes"; then

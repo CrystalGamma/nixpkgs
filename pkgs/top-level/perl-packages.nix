@@ -4108,7 +4108,7 @@ let
       \$(BASEEXT)\$(OBJ_EXT): \$(BASEEXT).xsi
 
       \$(BASEEXT).xsi: \$(DBI_DRIVER_XST) $autodir/Driver_xst.h
-        \$(PERL) -p -e "s/~DRIVER~/\$(BASEEXT)/g" \$(DBI_DRIVER_XST) > \$(BASEEXT).xsi
+      ''\t\$(PERL) -p -e "s/~DRIVER~/\$(BASEEXT)/g" \$(DBI_DRIVER_XST) > \$(BASEEXT).xsi
 
       # ---
       ';
@@ -11183,7 +11183,8 @@ let
       sha256 = "8391696db9e96c374b72984c0bad9c7d1c9f3b4efe68f9ddf429a77548e0e269";
     };
     buildInputs = [ TestPod TestPodCoverage ];
-    propagatedBuildInputs = [ pkgs.pkgconfig pkgs.dbus XMLTwig ];
+    propagatedBuildInputs = [ pkgs.dbus XMLTwig ];
+    nativeBuildInputs = [ pkgs.buildPackages.pkgconfig ];
     meta = {
       homepage = http://www.freedesktop.org/wiki/Software/dbus;
       description = "Extension for the DBus bindings";
@@ -17598,21 +17599,7 @@ let
     };
   };
 
-  XMLLibXML = buildPerlPackage rec {
-    name = "XML-LibXML-2.0132";
-    src = fetchurl {
-      url = "mirror://cpan/authors/id/S/SH/SHLOMIF/${name}.tar.gz";
-      sha256 = "0xnl281hb590i287fxpl947f1s4zl9dnvc4ajvsqi89w23im453j";
-    };
-    SKIP_SAX_INSTALL = 1;
-    buildInputs = [ pkgs.libxml2 ];
-    propagatedBuildInputs = [ XMLSAX ];
-
-    # https://rt.cpan.org/Public/Bug/Display.html?id=122958
-    preCheck = ''
-      rm t/32xpc_variables.t
-    '';
-  };
+  XMLLibXML = import ../development/perl-modules/XMLLibXML {inherit buildPerlPackage XMLSAX DevelChecklib pkgs;};
 
   XMLLibXMLSimple = buildPerlPackage {
     name = "XML-LibXML-Simple-0.99";
@@ -17645,18 +17632,7 @@ let
     };
   };
 
-  XMLParser = buildPerlPackage {
-    name = "XML-Parser-2.44";
-    src = fetchurl {
-      url = mirror://cpan/authors/id/T/TO/TODDR/XML-Parser-2.44.tar.gz;
-      sha256 = "05ij0g6bfn27iaggxf8nl5rhlwx6f6p6xmdav6rjcly3x5zd1s8s";
-    };
-    patchPhase = if stdenv.isCygwin then ''
-      sed -i"" -e "s@my \$compiler = File::Spec->catfile(\$path, \$cc\[0\]) \. \$Config{_exe};@my \$compiler = File::Spec->catfile(\$path, \$cc\[0\]) \. (\$^O eq 'cygwin' ? \"\" : \$Config{_exe});@" inc/Devel/CheckLib.pm
-    '' else null;
-    makeMakerFlags = "EXPATLIBPATH=${pkgs.expat.out}/lib EXPATINCPATH=${pkgs.expat.dev}/include";
-    propagatedBuildInputs = [ LWP ];
-  };
+  XMLParser = import ../development/perl-modules/XMLParser {inherit buildPerlPackage LWP pkgs;};
 
   XMLParserLite = buildPerlPackage {
     name = "XML-Parser-Lite-0.721";
@@ -17727,9 +17703,9 @@ let
       sha256 = "1qra9k3wszjxvsgbragl55z3qba4nri0ipmjaxfib4l6xxj6bsj5";
     };
     propagatedBuildInputs = [ XMLNamespaceSupport XMLSAXBase ];
-    postInstall = ''
+    postInstall = (if stdenv.hostPlatform == stdenv.buildPlatform then ''
       perl -MXML::SAX -e "XML::SAX->add_parser(q(XML::SAX::PurePerl))->save_parsers()"
-      '';
+    '' else "");
   };
 
   XMLSAXBase = buildPerlPackage {

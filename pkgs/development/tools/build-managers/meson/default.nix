@@ -45,12 +45,15 @@ python3Packages.buildPythonApplication rec {
 
   setupHook = ./setup-hook.sh;
 
-  crossFile = writeTextDir "cross-file.conf" ''
+  crossFile = writeTextDir "cross-file.conf" (''
     [binaries]
     c = '${stdenv.cc.targetPrefix}cc'
     cpp = '${stdenv.cc.targetPrefix}c++'
-    ar = '${stdenv.cc.bintools.targetPrefix}ar'
-    strip = '${stdenv.cc.bintools.targetPrefix}strip'
+    c++ = '${stdenv.cc.targetPrefix}c++'
+  ''
+  + lib.concatMapStrings (s: "${s} = '${stdenv.cc.bintools.targetPrefix + s}'\n") ["ar" "as" "ld" "nm" "objcopy" "objdump" "readelf" "ranlib" "strip" "strings" "size" "windres"]
+  + (if !stdenv.cc.isClang then "gcc = '${stdenv.cc.targetPrefix}gcc'\n" else "")
+  + ''
     pkgconfig = 'pkg-config'
 
     [properties]
@@ -58,10 +61,10 @@ python3Packages.buildPythonApplication rec {
 
     [host_machine]
     system = '${targetPlatform.parsed.kernel.name}'
-    cpu_family = '${targetPlatform.parsed.cpu.family}'
+    cpu_family = '${if targetPlatform.isx86_64 then "x86_64" else targetPlatform.parsed.cpu.family}'
     cpu = '${targetPlatform.parsed.cpu.name}'
     endian = ${if targetPlatform.isLittleEndian then "'little'" else "'big'"}
-  '';
+  '');
 
   # 0.45 update enabled tests but they are failing
   doCheck = false;

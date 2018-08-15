@@ -11,6 +11,7 @@ stdenv.mkDerivation rec {
   doCheck = false;
 
   configureFlags = [ "--with-syscmd-shell=${stdenv.shell}" ];
+  preConfigure = ''sed "1i#!$shell" -i configure'';
 
   # Upstream is aware of it; it may be in the next release.
   patches = [ ./s_isdir.patch ] ++ stdenv.lib.optional hostPlatform.isDarwin stdenv.secure-format-patch;

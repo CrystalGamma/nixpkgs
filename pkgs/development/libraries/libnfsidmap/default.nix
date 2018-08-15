@@ -14,7 +14,7 @@ stdenv.mkDerivation rec {
 
   preConfigure =
     ''
-      configureFlags="--with-pluginpath=$out/lib/libnfsidmap"
+      configureFlags="$configureFlags --with-pluginpath=$out/lib/libnfsidmap"
     '';
 
   meta = {

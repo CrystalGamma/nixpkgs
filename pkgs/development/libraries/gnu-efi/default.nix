@@ -22,7 +22,11 @@ stdenv.mkDerivation rec {
     "RANLIB=${stdenv.cc.targetPrefix}ranlib"
     "OBJCOPY=${stdenv.cc.targetPrefix}objcopy"
   ] ++ stdenv.lib.optional stdenv.isAarch32 "ARCH=arm"
-    ++ stdenv.lib.optional stdenv.isAarch64 "ARCH=aarch64";
+    ++ stdenv.lib.optional stdenv.isAarch64 "ARCH=aarch64"
+    ++ stdenv.lib.optional stdenv.hostPlatform.isx86_64 "ARCH=x86_64";
+
+  # x86-64 systemd also wants ia32 headers (at least when cross-building)
+  postInstall = if stdenv.hostPlatform.isx86_64 then "make -C inc PREFIX=$out ARCH=ia32 install" else "";
 
   meta = with stdenv.lib; {
     description = "GNU EFI development toolchain";

@@ -90,7 +90,10 @@ core = stdenv.mkDerivation rec {
       libs/{mpfr,pixman,poppler,potrace,xpdf,zlib,zziplib}
     mkdir WorkDir
     cd WorkDir
-  '';
+  '' + (if stdenv.isPower then ''
+    rm -r ../libs/luajit/*
+    echo "rebuild:" >../libs/luajit/Makefile
+  '' else "");
   configureScript = "../configure";
 
   configureFlags = common.configureFlags
@@ -99,6 +102,7 @@ core = stdenv.mkDerivation rec {
       "dvisvgm" "dvipng" # ghostscript dependency
       "luatex" "luajittex" "mp" "pmp" "upmp" "mf" # cairo would bring in X and more
       "xetex" "bibtexu" "bibtex8" "bibtex-x" "upmendex" # ICU isn't small
+      "mfluajit"
     ]
     ++ [ "--without-system-harfbuzz" "--without-system-icu" ] # bogus configure
     ;

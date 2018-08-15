@@ -1,5 +1,5 @@
 { stdenv, fetchurl, gettext, libgpgerror, enableCapabilities ? false, libcap
-, buildPackages
+, buildPackages, autoreconfHook
 }:
 
 assert enableCapabilities -> stdenv.isLinux;
@@ -21,10 +21,14 @@ stdenv.mkDerivation rec {
   # The build enables -O2 by default for everything else.
   hardeningDisable = stdenv.lib.optional stdenv.cc.isClang "fortify";
 
-  # Accepted upstream, should be in next update: #42150, https://dev.gnupg.org/T4034
-  patches = [ ./fix-jent-locking.patch ];
+  patches = [
+    ./fix-cross-compilation-to-x86.patch
+    # Accepted upstream, should be in next update: #42150, https://dev.gnupg.org/T4034
+    ./fix-jent-locking.patch
+  ];
 
   depsBuildBuild = [ buildPackages.stdenv.cc ];
+  nativeBuildInputs = [  autoreconfHook ];
 
   buildInputs = [ libgpgerror ]
     ++ stdenv.lib.optional stdenv.isDarwin gettext

@@ -83,6 +83,8 @@ in stdenv.mkDerivation rec {
     "-Defi-libdir=${toString gnu-efi}/lib"
     "-Defi-includedir=${toString gnu-efi}/include/efi"
     "-Defi-ldsdir=${toString gnu-efi}/lib"
+    "-Defi-cc=${stdenv.cc}/bin/${stdenv.cc.targetPrefix}cc"
+    "-Defi-ld=${stdenv.cc.bintools}/bin/${stdenv.cc.targetPrefix}ld"
 
     "-Dsysvinit-path="
     "-Dsysvrcnd-path="

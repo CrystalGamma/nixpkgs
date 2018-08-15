@@ -1,5 +1,5 @@
 { stdenv, fetchurl, flex, bison, python
-, gettext, ncurses, libusb, freetype, qemu, lvm2, unifont, pkgconfig
+, gettext, ncurses, libusb, freetype, qemu, lvm2, unifont, pkgconfig, buildPackages
 , fuse # only needed for grub-mount
 , zfs ? null
 , efiSupport ? false
@@ -51,6 +51,7 @@ stdenv.mkDerivation rec {
   buildInputs = [ ncurses libusb freetype gettext lvm2 fuse ]
     ++ optional doCheck qemu
     ++ optional zfsSupport zfs;
+  depsBuildBuild = if stdenv.hostPlatform != stdenv.buildPlatform then [ buildPackages.stdenv.cc buildPackages.freetype ] else [];
 
   hardeningDisable = [ "all" ];
 

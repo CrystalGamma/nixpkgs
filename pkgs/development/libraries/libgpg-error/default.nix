@@ -34,9 +34,14 @@ in stdenv.mkDerivation (rec {
 
   postPatch = ''
     sed '/BUILD_TIMESTAMP=/s/=.*/=1970-01-01T00:01+0000/' -i ./configure
-  '' + lib.optionalString (stdenv.hostPlatform.isArm && stdenv.buildPlatform != stdenv.hostPlatform ) ''
-    ln -s lock-obj-pub.arm-unknown-linux-gnueabi.h src/syscfg/lock-obj-pub.linux-gnueabihf.h
-  '' + lib.optionalString stdenv.hostPlatform.isMusl ''
+  '' + lib.optionalString (stdenv.hostPlatform != stdenv.buildPlatform) (
+    if stdenv.hostPlatform.isx86_64 then ''
+      ln -s lock-obj-pub.x86_64-pc-linux-gnu.h src/syscfg/lock-obj-pub.linux-gnu.h
+    '' else
+    if stdenv.hostPlatform.isArm then ''
+      ln -s lock-obj-pub.arm-unknown-linux-gnueabi.h src/syscfg/lock-obj-pub.linux-gnueabihf.h
+    '' else throw "unknown platform name to cross-build libgpg-error"
+  ) + lib.optionalString stdenv.hostPlatform.isMusl ''
     ln -s lock-obj-pub.x86_64-pc-linux-musl.h src/syscfg/lock-obj-pub.linux-musl.h
   '';
 

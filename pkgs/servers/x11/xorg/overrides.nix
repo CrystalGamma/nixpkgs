@@ -1,7 +1,7 @@
 { args, xorg }:
 
 let
-  inherit (args) stdenv makeWrapper;
+  inherit (args) stdenv makeWrapper buildPackages;
   inherit (stdenv) lib isDarwin;
   inherit (lib) overrideDerivation;
 
@@ -83,6 +83,7 @@ in
 
   xcbproto = attrs : attrs // {
     nativeBuildInputs = attrs.nativeBuildInputs ++ [ args.python ];
+    buildInputs = [];
   };
 
   libX11 = attrs: attrs // {
@@ -98,6 +99,7 @@ in
         rm -rf $out/share/doc
       '';
     CPP = stdenv.lib.optionalString stdenv.isDarwin "clang -E -";
+    depsBuildBuild = [buildPackages.stdenv.cc];
   };
 
   libAppleWM = attrs: attrs // {
@@ -141,6 +143,7 @@ in
       ++ malloc0ReturnsNullCrossFlag;
     propagatedBuildInputs = [ xorg.libSM ];
     CPP = stdenv.lib.optionalString stdenv.isDarwin "clang -E -";
+    depsBuildBuild = [buildPackages.stdenv.cc];
     outputs = [ "out" "dev" "devdoc" ];
   };
 
