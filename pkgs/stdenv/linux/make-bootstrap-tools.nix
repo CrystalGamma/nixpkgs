@@ -58,6 +58,11 @@ in with pkgs; rec {
         cp -d ${libc.out}/lib/libnss*.so* $out/lib
         cp -d ${libc.out}/lib/libresolv*.so* $out/lib
         cp -d ${libc.out}/lib/crt?.o $out/lib
+        # some CRT objects contain a store path reference (which for some reason isn't removed by nuke-refs) in .debug_line, remove to preserve idempotency
+        for file in "$out/lib/crt"?.o; do
+          chmod u+w $file
+          $OBJCOPY -g $file
+        done
 
         cp -rL ${libc.dev}/include $out
         chmod -R u+w "$out"
@@ -154,7 +159,7 @@ in with pkgs; rec {
         chmod -R u+w $out
 
         # Strip executables even further.
-        for i in $out/bin/* $out/libexec/gcc/*/*/*; do
+        for i in $out/bin/* $out/libexec/gcc/*/*/* $out/lib/libz.so*; do
             if test -x $i -a ! -L $i; then
                 chmod +w $i
                 $STRIP -s $i || true
@@ -165,6 +170,37 @@ in with pkgs; rec {
         nuke-refs $out/lib/*
         nuke-refs $out/libexec/gcc/*/*/*
         nuke-refs $out/lib/gcc/*/*/*
+
+        # replace build IDs from libc with prefix of the file hash to preserve idempotency
+        for file in ${if hostPlatform.libc == "glibc" then ''"$out/lib/"*-*.so $out/lib/libmemusage.so'' else ''"$out/lib/"*.so*''}; do
+          section="$($OBJDUMP -h $file | grep .note.gnu.build-id || true)"
+          if test "$section" = ""; then
+            continue
+          fi
+          # the build id section has a 16-byte header (it is a notes section with 'GNU\0' as name)
+          offset=$(( $(echo "$section" | awk '{printf "16#%s", $6}') + 16 ))
+          size=$(( $(echo "$section" | awk '{printf "16#%s", $3}') - 16 ))
+          # zero out the field so we can calculate our own hash
+          dd if=/dev/zero of=$file seek=$offset bs=1 count=$size conv=notrunc
+          # insert hash prefix
+          printf $(sha256sum $file | cut -d ' ' -f 1 | sed -e 's/../\\x&/g') | dd of=$file seek=$offset bs=1 count=$size conv=notrunc
+        done
+
+        '' + (if hostPlatform == buildPlatform then ''
+        # override executable_checksum for idempotency
+        for file in $out/libexec/gcc/*/*/cc1{,plus}; do
+          line=$($NM -SD $file|grep executable_checksum)
+          if test "$line" = ""; then
+            continue
+          fi
+          offset=$(( "16#$(echo $line | cut -sf 1 -d " ") $($OBJDUMP -x $file |awk '/.rodata/ {printf "- 16#%s + 16#%s", $4, $6}')" ))
+          size=$(printf "%d" 0x$(echo $line | cut -sf 2 -d " "))
+          dd if=/dev/zero of=$file seek=$offset bs=1 count=$size conv=notrunc
+          # executable_checksum is 16 bytes at the time of this writing, so a prefix of the file's sha256 should be enough
+          checksum=$(sha256sum $file | cut -d ' ' -f 1)
+          printf $(echo $checksum | sed -e 's/../\\x&/g') | dd of=$file seek=$offset bs=1 count=$size conv=notrunc
+        done
+        '' else "") +  ''
 
         mkdir $out/.pack
         mv $out/* $out/.pack
