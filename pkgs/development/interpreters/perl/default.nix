@@ -38,7 +38,7 @@ let
     setOutputFlags = false;
 
     patches =
-      [ ]
+      [ ./reproducibility.patch ]
       # Do not look in /usr etc. for dependencies.
       ++ optional (versionOlder version "5.26") ./no-sys-dirs.patch
       ++ optional (versionAtLeast version "5.26") ./no-sys-dirs-5.26.patch
@@ -96,6 +96,7 @@ let
         # We need to do this because the bootstrap doesn't have a static libpthread
         sed -i 's,\(libswanted.*\)pthread,\1,g' Configure
       '';
+    PERL_HASH_SEED="0";
 
     preBuild = optionalString (!(stdenv ? cc && stdenv.cc.nativeTools))
       ''

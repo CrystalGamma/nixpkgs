@@ -1,0 +1,26 @@
+--- perl-5.24.3/Configure
++++ perl-5.24.3/Configure
+@@ -3862,7 +3862,10 @@
+ . ./posthint.sh
+ 
+ : who configured the system
+-cf_time=`LC_ALL=C; LANGUAGE=C; export LC_ALL; export LANGUAGE; $date 2>&1`
++case "$SOURCE_DATE_EPOCH" in
++       "") cf_time=`LC_ALL=C; LANGUAGE=C; export LC_ALL; export LANGUAGE; $date 2>&1`;;
++       *) cf_time=`LC_ALL=C; LANGUAGE=C; export LC_ALL; export LANGUAGE; date -d "@$SOURCE_DATE_EPOCH" 2>&1`
++esac
+ case "$cf_by" in
+ "")
+        cf_by=`(logname) 2>/dev/null`
+--- perl-5.24.3/config_h.SH
++++ perl-5.24.3/config_h.SH
+@@ -44,9 +44,6 @@
+ 
+ /* Package name      : $package
+  * Source directory  : $src
+- * Configuration time: $cf_time
+- * Configured by     : $cf_by
+- * Target system     : $myuname
+  */
+ 
+ #ifndef _config_h_
