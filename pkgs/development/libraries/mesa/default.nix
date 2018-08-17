@@ -24,24 +24,24 @@
 with stdenv.lib;
 
 if ! lists.elem stdenv.system platforms.mesaPlatforms then
-  throw "unsupported platform for Mesa"
+  throw "${stdenv.system}: unsupported platform for Mesa"
 else
 
 let
   defaultGalliumDrivers =
-    if stdenv.isAarch32
-    then ["virgl" "nouveau" "freedreno" "vc4" "etnaviv" "imx"]
-    else if stdenv.isAarch64
-    then ["virgl" "nouveau" "vc4" ]
-    else ["virgl" "svga" "i915" "r300" "r600" "radeonsi" "nouveau"];
+    if stdenv.isAarch32 then ["virgl" "nouveau" "freedreno" "vc4" "etnaviv" "imx"]
+    else if stdenv.isAarch64 then ["virgl" "nouveau" "vc4" ]
+    else ["virgl" "r300" "r600" "radeonsi" "nouveau"]
+    ++ (if stdenv.isx86 then ["svga" "i915"] else []);
   defaultDriDrivers =
     if (stdenv.isAarch32 || stdenv.isAarch64)
     then ["nouveau"]
-    else ["i915" "i965" "nouveau" "radeon" "r200"];
+    else ["nouveau" "radeon" "r200"]
+    ++ (if stdenv.isx86 then ["i915" "i965"] else []);
   defaultVulkanDrivers =
     if (stdenv.isAarch32 || stdenv.isAarch64)
     then []
-    else ["intel"] ++ lib.optional enableRadv "radeon";
+    else lib.optional stdenv.isx86 "intel" ++ lib.optional enableRadv "radeon";
 in
 
 let gallium_ = galliumDrivers; dri_ = driDrivers; vulkan_ = vulkanDrivers; in

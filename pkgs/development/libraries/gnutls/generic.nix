@@ -1,7 +1,7 @@
 { lib, stdenv, zlib, lzo, libtasn1, nettle, pkgconfig, lzip
 , guileBindings, guile, perl, gmp, autogen, libidn, p11-kit, libiconv
 , tpmSupport ? false, trousers, which, nettools, libunistring
-, unbound, dns-root-data, gettext
+, unbound, dns-root-data, gettext, ppp, openssl, datefudge, socat
 
 # Version dependent args
 , version, src, patches ? [], postPatch ? "", nativeBuildInputs ? []
@@ -46,7 +46,7 @@ stdenv.mkDerivation {
     ++ buildInputs;
 
   nativeBuildInputs = [ perl pkgconfig ] ++ nativeBuildInputs
-    ++ lib.optionals doCheck [ which nettools ];
+    ++ lib.optionals doCheck [ which nettools ppp openssl datefudge socat ];
 
   propagatedBuildInputs = [ nettle ];
 

@@ -122,7 +122,8 @@ let
       # Utility flags to test the type of platform.
       inherit (hostPlatform)
         isDarwin isLinux isSunOS isHurd isCygwin isFreeBSD isOpenBSD
-        isi686 isx86_64 is64bit isAarch32 isAarch64 isMips isBigEndian;
+        isi686 isx86_64 is64bit isAarch32 isAarch64 isMips isBigEndian
+        isx86 isPower;
       isArm = builtins.trace "stdenv.isArm is deprecated after 18.03" hostPlatform.isArm;
 
       # Whether we should run paxctl to pax-mark binaries.

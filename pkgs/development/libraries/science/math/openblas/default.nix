@@ -36,6 +36,14 @@ let
       USE_OPENMP = "1";
     };
 
+    powerpc64le-linux = {
+      BINARY = "64";
+      DYNAMIC_ARCH = "1";
+      CC = "gcc";
+      USE_OPENMP = "1";
+      TARGET = "POWER8";
+    };
+
     i686-linux = {
       BINARY = "32";
       TARGET = "P2";
