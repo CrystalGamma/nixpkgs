@@ -21,9 +21,9 @@ in
         default = false;
         type = types.bool;
         description = ''
-          Whether to generate an extlinux-compatible configuration file
-          under <literal>/boot/extlinux.conf</literal>.  For instance,
-          U-Boot's generic distro boot support uses this file format.
+          Whether to generate an extlinux-compatible configuration file.
+          For instance, U-Boot's generic distro boot support uses this file
+          format.
 
           See <link xlink:href="http://git.denx.de/?p=u-boot.git;a=blob;f=doc/README.distro;hb=refs/heads/master">U-boot's documentation</link>
           for more information.
@@ -50,11 +50,30 @@ in
         '';
       };
 
+      configPath = mkOption {
+        default = "/boot/extlinux/extlinux.conf";
+        type = types.path;
+        description = ''
+          The path where to create the configuration file.
+          Has to be on the same file system as the kernel and initial ramdisk images.
+        '';
+      };
+
+      imagePath = mkOption {
+        default = "/boot/nixos/";
+        type = types.path;
+        description = ''
+          The directory where to store kernel and initial ramdisk images.
+          WARNING: the build script will clean out any files in this directory
+          that it didn't create, so this directory has to be otherwise empty!
+          Has to be on the same file system as the configuration file.
+        '';
+      };
     };
   };
 
   config = let
-    builderArgs = "-g ${toString cfg.configurationLimit} -t ${timeoutStr}" + lib.optionalString (dtCfg.name != null) " -n ${dtCfg.name}";
+    builderArgs = "-g ${toString cfg.configurationLimit} -d ${cfg.imagePath} -o ${cfg.configPath} -t ${timeoutStr}" + lib.optionalString (dtCfg.name != null) " -n ${dtCfg.name}";
   in
     mkIf cfg.enable {
       system.build.installBootLoader = "${builder} ${builderArgs} -c";
