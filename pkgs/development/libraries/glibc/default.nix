@@ -18,6 +18,8 @@ callPackage ./common.nix { inherit stdenv; } {
 
     inherit withLinuxHeaders profilingLibraries withGd;
 
+    ${if stdenv.hostPlatform.isAarch64 then "allowedReferences" else null} = [];
+
     # Note:
     # Things you write here override, and do not add to,
     # the values in `common.nix`.
