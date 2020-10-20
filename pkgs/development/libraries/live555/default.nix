@@ -26,12 +26,10 @@ stdenv.mkDerivation rec {
   configurePhase = ''
     runHook preConfigure
 
-    ./genMakefiles ${{
-      x86_64-darwin = "macosx";
-      i686-linux = "linux";
-      x86_64-linux = "linux-64bit";
-      aarch64-linux = "linux-64bit";
-    }.${stdenv.hostPlatform.system}}
+    ./genMakefiles ${if stdenv.hostPlatform.isLinux then
+      (if stdenv.hostPlatform.is64bit then "linux-64bit" else "linux")
+    else if stdenv.hostPlatform.isDarwin then "macosx"
+    else throw "unknown host platform type"}
 
     runHook postConfigure
   '';
