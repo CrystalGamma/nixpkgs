@@ -36,7 +36,7 @@ stdenv.mkDerivation rec {
     bashInteractive
   ];
 
-  # - ignore test_gcc on ARM because it assumes -march=native
+  # - ignore test_gcc on non-x86 because it assumes -march=native
   # - ignore test_chsh because it assumes /etc/shells exists
   # - ignore test_ether_wake, test_ifdown, test_ifstat, test_ifup,
   #   test_iperf, test_iperf3, test_nethogs and ip_addresses
@@ -45,7 +45,7 @@ stdenv.mkDerivation rec {
   # - ignore test_screen because it assumes vt terminals exist
   checkPhase = ''
     pytest . \
-      ${lib.optionalString (stdenv.hostPlatform.isAarch64 || stdenv.hostPlatform.isAarch32) "--ignore=test/t/test_gcc.py"} \
+      ${lib.optionalString (!stdenv.hostPlatform.isx86) "--ignore=test/t/test_gcc.py"} \
       --ignore=test/t/test_chsh.py \
       --ignore=test/t/test_ether_wake.py \
       --ignore=test/t/test_ifdown.py \
