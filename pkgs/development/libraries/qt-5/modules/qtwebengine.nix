@@ -159,6 +159,7 @@ qtModule {
     harfbuzz icu
 
     libevent
+  #] ++ optionals (!stdenv.hostPlatform.isx86) [
     ffmpeg
   ] ++ optionals (!stdenv.isDarwin) [
     dbus zlib minizip snappy nss protobuf jsoncpp

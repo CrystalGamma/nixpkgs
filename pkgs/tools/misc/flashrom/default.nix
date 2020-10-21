@@ -18,7 +18,7 @@ stdenv.mkDerivation rec {
     sha256 = "0ax4kqnh7kd3z120ypgp73qy1knz47l6qxsqzrfkd97mh5cdky71";
   };
 
-  mesonFlags = lib.optionals stdenv.isAarch64 [ "-Dpciutils=false" ];
+  mesonFlags = lib.optionals (!stdenv.hostPlatform.isx86) [ "-Dpciutils=false" ];
   nativeBuildInputs = [ meson pkg-config ninja ];
   buildInputs = [ libftdi1 libusb1 pciutils ];
 

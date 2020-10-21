@@ -100,7 +100,7 @@
 , libXv ? null # Xlib support
 , libXext ? null # Xlib support
 , xz ? null # xz-utils
-, nvenc ? !stdenv.isDarwin && !stdenv.isAarch64, nv-codec-headers ? null # NVIDIA NVENC support
+, nvenc ? !stdenv.isDarwin && stdenv.hostPlatform.isx86, nv-codec-headers ? null # NVIDIA NVENC support
 , openal ? null # OpenAL 1.1 capture support
 #, opencl ? null # OpenCL code
 , opencore-amr ? null # AMR-NB de/encoder & AMR-WB decoder
@@ -184,7 +184,8 @@
  */
 
 let
-  inherit (stdenv) isCygwin isDarwin isFreeBSD isLinux isAarch64;
+  inherit (stdenv) isCygwin isDarwin isFreeBSD isLinux;
+  inherit (stdenv.hostPlatform) isx86;
   inherit (lib) optional optionals optionalString enableFeature;
 in
 
@@ -351,7 +352,7 @@ stdenv.mkDerivation rec {
     (enableFeature (libiconv != null) "iconv")
     (enableFeature (libjack2 != null) "libjack")
     #(enableFeature (if isLinux then libiec61883 != null && libavc1394 != null && libraw1394 != null else false) "libiec61883")
-    (enableFeature (if isLinux && !isAarch64 then libmfx != null else false) "libmfx")
+    (enableFeature (if isLinux && isx86 then libmfx != null else false) "libmfx")
     (enableFeature (libmodplug != null) "libmodplug")
     (enableFeature (libmysofa != null) "libmysofa")
     #(enableFeature (libnut != null) "libnut")
@@ -364,7 +365,7 @@ stdenv.mkDerivation rec {
     (enableFeature ((isLinux || isFreeBSD) && libva != null) "vaapi")
     (enableFeature (libvdpau != null) "vdpau")
     (enableFeature (libvorbis != null) "libvorbis")
-    (enableFeature (!isAarch64 && libvmaf != null && version3Licensing) "libvmaf")
+    (enableFeature (isx86 && libvmaf != null && version3Licensing) "libvmaf")
     (enableFeature (libvpx != null) "libvpx")
     (enableFeature (libwebp != null) "libwebp")
     (enableFeature (libX11 != null && libXv != null && libXext != null) "xlib")
@@ -432,9 +433,9 @@ stdenv.mkDerivation rec {
   ] ++ optionals openglExtlib [ libGL libGLU ]
     ++ optionals nonfreeLicensing [ fdk_aac openssl ]
     ++ optional ((isLinux || isFreeBSD) && libva != null) libva
-    ++ optional (!isAarch64 && libvmaf != null && version3Licensing) libvmaf
+    ++ optional (isx86 && libvmaf != null && version3Licensing) libvmaf
     ++ optionals isLinux [ alsaLib libraw1394 libv4l vulkan-loader glslang ]
-    ++ optional (isLinux && !isAarch64 && libmfx != null) libmfx
+    ++ optional (isLinux && isx86 && libmfx != null) libmfx
     ++ optional nvenc nv-codec-headers
     ++ optionals stdenv.isDarwin [ Cocoa CoreServices CoreAudio AVFoundation
                                    MediaToolbox VideoDecodeAcceleration
