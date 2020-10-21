@@ -20,7 +20,7 @@
 , libshout
 , cairo
 , gdk-pixbuf
-, aalib
+, aalib ? null
 , libcaca
 , libsoup
 , libpulseaudio
@@ -136,6 +136,8 @@ stdenv.mkDerivation rec {
     "-Dximagesrc=disabled" # Linux-only
   ] ++ lib.optionals (!raspiCameraSupport) [
     "-Drpicamsrc=disabled"
+  ] ++ lib.optionals (aalib == null) [
+    "-Daalib=disabled"
   ];
 
   postPatch = ''
