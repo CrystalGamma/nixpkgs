@@ -24,7 +24,8 @@ stdenv.mkDerivation rec {
 
   configureFlags =
     lib.optional stdenv.hostPlatform.isSunOS "--disable-thread-safe" ++
-    lib.optional stdenv.hostPlatform.is64bit "--with-pic";
+    lib.optional stdenv.hostPlatform.is64bit "--with-pic"
+    ++ ["--disable-decimal-float"];
 
   doCheck = true; # not cross;
 

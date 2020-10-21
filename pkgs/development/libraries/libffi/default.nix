@@ -24,6 +24,7 @@ stdenv.mkDerivation rec {
     "--with-gcc-arch=generic" # no detection of -march= or -mtune=
     "--enable-pax_emutramp"
   ];
+CFLAGS="-O3 -mfloat128";
 
   preCheck = ''
     # The tests use -O0 which is not compatible with -D_FORTIFY_SOURCE.
