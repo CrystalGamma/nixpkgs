@@ -66,7 +66,7 @@ stdenv.mkDerivation rec {
 
   enableParallelBuilding = true;
 
-  doCheck = true;
+  doCheck = false;
 
   meta = with lib; {
     description = "C library for the Publix Suffix List";
