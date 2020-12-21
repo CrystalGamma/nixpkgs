@@ -138,6 +138,7 @@ rec {
   arm-embedded = {
     config = "arm-none-eabi";
     libc = "newlib";
+    platform = {};
   };
   armhf-embedded = {
     config = "arm-none-eabihf";
