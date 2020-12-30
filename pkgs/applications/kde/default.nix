@@ -17,11 +17,10 @@ still shows most of the available features is in `./gwenview.nix`.
 
 # Updates
 
-1. Update the URL in `./fetch.sh`.
-2. Run `./maintainers/scripts/fetch-kde-qt.sh pkgs/applications/kde`
-   from the top of the Nixpkgs tree.
-3. Use `nox-review wip` to check that everything builds.
-4. Commit the changes and open a pull request.
+1. Run the command in `./srcs.nix`, from the root of the nixpkgs tree, with
+   adjusted release version.
+2. Use `nox-review wip` to check that everything builds.
+3. Commit the changes and open a pull request.
 
 */
 
