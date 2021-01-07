@@ -212,6 +212,8 @@ stdenv.mkDerivation ({
     mkdir ../build
     cd ../build
 
+    export PATH="${stdenv.cc.bintools.bintools}/bin:$PATH"
+
     configureScript="`pwd`/../$sourceRoot/configure"
 
     ${lib.optionalString (stdenv.cc.libc != null)
