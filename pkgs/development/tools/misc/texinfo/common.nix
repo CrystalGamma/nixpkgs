@@ -50,7 +50,7 @@ stdenv.mkDerivation {
 
   checkInputs = [ procps ];
 
-  doCheck = interactive
+  doCheck = false
     && !stdenv.isDarwin
     && !stdenv.isSunOS; # flaky
 
