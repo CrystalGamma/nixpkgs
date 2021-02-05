@@ -11,7 +11,7 @@ mkDerivation {
     maintainers = kdepimTeam;
     broken = lib.versionOlder qtbase.version "5.13.0";
   };
-  output = [ "out" "dev" ];
+  output = [ "out" ];
   nativeBuildInputs = [ extra-cmake-modules kdoctools ];
   buildInputs = [
     grantlee ki18n kiconthemes knewstuff kservice kxmlgui qtbase
