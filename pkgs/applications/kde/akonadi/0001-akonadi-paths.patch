@@ -107,16 +107,16 @@ index cac40f5..527649b 100644
  
      qCDebug(AKONADISERVER_LOG) << "Using mysqld:" << mMysqldPath;
  
-@@ -152,9 +139,6 @@ bool DbConfigMysql::init(QSettings &settings)
-     settings.setValue(QStringLiteral("Name"), mDatabaseName);
-     settings.setValue(QStringLiteral("Host"), mHostName);
-     settings.setValue(QStringLiteral("Options"), mConnectionOptions);
--    if (!mMysqldPath.isEmpty()) {
--        settings.setValue(QStringLiteral("ServerPath"), mMysqldPath);
--    }
-     settings.setValue(QStringLiteral("StartServer"), mInternalServer);
-     settings.endGroup();
-     settings.sync();
+@@ -126,9 +126,6 @@
+         settings.setValue(QStringLiteral("Name"), mDatabaseName);
+         settings.setValue(QStringLiteral("Host"), mHostName);
+         settings.setValue(QStringLiteral("Options"), mConnectionOptions);
+-        if (!mMysqldPath.isEmpty()) {
+-            settings.setValue(QStringLiteral("ServerPath"), mMysqldPath);
+-        }
+         settings.setValue(QStringLiteral("StartServer"), mInternalServer);
+         settings.endGroup();
+         settings.sync();
 @@ -209,7 +193,7 @@ bool DbConfigMysql::startInternalServer()
  #endif
  
@@ -177,14 +177,14 @@ index 09cdbd5..1c8996b 100644
      qCDebug(AKONADISERVER_LOG) << "Found pg_upgrade:" << mPgUpgradePath;
      mPgData = settings.value(QStringLiteral("PgData"), defaultPgData).toString();
      if (mPgData.isEmpty()) {
-@@ -207,7 +195,6 @@ bool DbConfigPostgresql::init(QSettings &settings)
-         settings.setValue(QStringLiteral("Port"), mHostPort);
-     }
-     settings.setValue(QStringLiteral("Options"), mConnectionOptions);
--    settings.setValue(QStringLiteral("ServerPath"), mServerPath);
-     settings.setValue(QStringLiteral("InitDbPath"), mInitDbPath);
-     settings.setValue(QStringLiteral("StartServer"), mInternalServer);
-     settings.endGroup();
+@@ -182,7 +182,6 @@
+             settings.setValue(QStringLiteral("Port"), mHostPort);
+         }
+         settings.setValue(QStringLiteral("Options"), mConnectionOptions);
+-        settings.setValue(QStringLiteral("ServerPath"), mServerPath);
+         settings.setValue(QStringLiteral("InitDbPath"), mInitDbPath);
+         settings.setValue(QStringLiteral("StartServer"), mInternalServer);
+         settings.endGroup();
 -- 
 2.25.4
 
