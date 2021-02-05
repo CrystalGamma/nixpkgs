@@ -5,6 +5,7 @@
   kauth, kcodecs, kcompletion, kconfig, kconfigwidgets, kdbusaddons, kdoctools,
   kguiaddons, ki18n, kiconthemes, kjobwidgets, kcmutils, kdelibs4support, kio,
   knotifications, kservice, kwidgetsaddons, kwindowsystem, kxmlgui, phonon,
+  kidletime, knotifyconfig,
 
   kimap, akonadi, akonadi-contacts, akonadi-mime, kalarmcal, kcalendarcore, kcalutils,
   kholidays, kidentitymanagement, libkdepim, mailcommon, kmailtransport, kmime,
@@ -26,6 +27,7 @@ mkDerivation {
     kauth kcodecs kcompletion kconfig kconfigwidgets kdbusaddons kdoctools
     kguiaddons ki18n kiconthemes kjobwidgets kcmutils kdelibs4support kio
     knotifications kservice kwidgetsaddons kwindowsystem kxmlgui phonon
+    kidletime knotifyconfig
 
     kimap akonadi akonadi-contacts akonadi-mime kalarmcal kcalendarcore kcalutils
     kholidays kidentitymanagement libkdepim mailcommon kmailtransport kmime
