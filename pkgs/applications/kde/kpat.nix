@@ -18,6 +18,7 @@ mkDerivation {
     libkdegames
     freecell-solver
   ];
+  cmakeFlags = ["-DWITH_BH_SOLVER=OFF"];
   meta = {
     license = with lib.licenses; [ gpl2 lgpl21 fdl12 ];
     maintainers = with lib.maintainers; [ rnhmjoj ];
