@@ -11256,7 +11256,7 @@ in
     else if isFreeBSD then
       llvmPackages_7
     else if isLinux then
-      llvmPackages_7
+      llvmPackages_latest
     else if isWasm then
       llvmPackages_8
     else
